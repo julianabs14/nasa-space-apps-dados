@@ -8,3 +8,4 @@ pyogrio
 duckdb
 matplotlib
 tabulate
+scikit-learn
