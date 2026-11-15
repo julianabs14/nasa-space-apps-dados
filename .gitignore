@@ -9,5 +9,9 @@ data/raw/*
 !data/raw/m20_traverse_aoi.csv
 
 # banco gerado pelo pipeline
+# data/farol.duckdb FICA no repositório de propósito: é para os avaliadores e a equipe
+# abrirem o banco pronto (DBeaver/Python) sem rodar o pipeline. Os dados são públicos
+# (NASA/USGS). Ele é gerado por: python -m elt.carregar
 *.duckdb
+!data/farol.duckdb
 *.duckdb.wal
