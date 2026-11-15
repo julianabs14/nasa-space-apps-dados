@@ -7,8 +7,8 @@ SELECT classe,
        ROUND(COUNT(*) * 400 / 1e6, 2) AS km2
 FROM decisao GROUP BY classe ORDER BY celulas DESC;
 
--- @ 2. Armadilhas escondidas: planas, mas com solo solto. Onde a geologia confirma?
-SELECT material_escuro AS confirmado_pelo_mapa_geologico,
+-- @ 2. Planas, mas com possível solo solto: onde o mapa geológico também mostra material escuro?
+SELECT material_escuro AS com_material_escuro_no_mapa,
        COUNT(*) AS celulas,
        ROUND(AVG(indice_firmeza), 2) AS firmeza_media,
        ROUND(AVG(declive_medio_graus), 1) AS declive_medio
@@ -36,7 +36,7 @@ SELECT d.classe, COUNT(*) AS celulas, ROUND(AVG(m.brilho_ctx), 1) AS brilho_medi
 FROM decisao d JOIN mapa_risco m USING (cell_id)
 GROUP BY d.classe ORDER BY celulas DESC;
 
--- @ 6. Validação com a realidade: por onde o Perseverance andou, o que nosso mapa dizia?
+-- @ 6. Comparação com a rota real: por onde o Perseverance andou, o que nosso mapa dizia?
 SELECT d.classe,
        COUNT(*) AS celulas_na_rota,
        ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) AS pct_da_rota,

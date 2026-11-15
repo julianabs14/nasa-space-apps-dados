@@ -11,12 +11,12 @@ Limites: declive ≥ 10° = íngreme; firmeza < 0.35 = solo solto; cratera a < 3
 | amarelo_declive   |       200 |        2   |  0.08 |
 | vermelho          |       107 |        1.1 |  0.04 |
 
-## 2. Armadilhas escondidas: planas, mas com solo solto. Onde a geologia confirma?
+## 2. Planas, mas com possível solo solto: onde o mapa geológico também mostra material escuro?
 
-| confirmado_pelo_mapa_geologico   |   celulas |   firmeza_media |   declive_medio |
-|:---------------------------------|----------:|----------------:|----------------:|
-| True                             |      1249 |             0.1 |             2.8 |
-| False                            |      1074 |             0.2 |             4   |
+| com_material_escuro_no_mapa   |   celulas |   firmeza_media |   declive_medio |
+|:------------------------------|----------:|----------------:|----------------:|
+| True                          |      1249 |             0.1 |             2.8 |
+| False                         |      1074 |             0.2 |             4   |
 
 ## 3. Risco por unidade geológica
 
@@ -44,7 +44,7 @@ Limites: declive ≥ 10° = íngreme; firmeza < 0.35 = solo solto; cratera a < 3
 | amarelo_declive   |       200 |          123.6 |            0.6  |
 | vermelho          |       107 |          128.8 |            0.21 |
 
-## 6. Validação com a realidade: por onde o Perseverance andou, o que nosso mapa dizia?
+## 6. Comparação com a rota real: por onde o Perseverance andou, o que nosso mapa dizia?
 
 | classe            |   celulas_na_rota |   pct_da_rota |   declive_medio |   firmeza_media |
 |:------------------|------------------:|--------------:|----------------:|----------------:|

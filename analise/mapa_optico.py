@@ -58,7 +58,7 @@ def main():
     eixos[1].imshow(img, cmap="gray", extent=ext)
     eixos[1].imshow(sobre, cmap=cores, vmin=0.5, vmax=3.5, alpha=0.45, extent=ext, interpolation="nearest")
     eixos[1].set_title("O que os dados revelam — decisão sobreposta")
-    eixos[1].legend(handles=[Patch(color="#e8873a", label="Armadilha: plano mas solto"),
+    eixos[1].legend(handles=[Patch(color="#e8873a", label="Atenção: plano, possível solo solto"),
                             Patch(color="#e8c547", label="Atenção: declive"),
                             Patch(color="#c8352e", label="Evitar")],
                     loc="upper center", bbox_to_anchor=(0.5, -0.07), ncol=3, frameon=False)

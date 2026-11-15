@@ -122,7 +122,7 @@ table.dados th { color: var(--text-secondary); font-weight: 500; }
         <div id="chUnidades"></div>
       </div>
       <div class="card">
-        <h2>Validação: por onde o Perseverance andou</h2>
+        <h2>Comparação: por onde o Perseverance andou</h2>
         <p class="hint">Classe das células atravessadas pela rota real do rover</p>
         <div id="chRota"></div>
       </div>
@@ -158,7 +158,7 @@ const N = D.n, TOTAL = N * N;
 const CL = {
   verde:             { nome: "Seguro",                      curto: "Seguro",    cor: "--good",     ico: "✓" },
   amarelo_declive:   { nome: "Atenção: declive",            curto: "Declive",   cor: "--warning",  ico: "▲" },
-  amarelo_armadilha: { nome: "Armadilha: plano mas solto",  curto: "Armadilha", cor: "--serious",  ico: "◆" },
+  amarelo_armadilha: { nome: "Atenção: plano, possível solo solto",  curto: "Checar", cor: "--serious",  ico: "◆" },
   vermelho:          { nome: "Evitar",                      curto: "Evitar",    cor: "--critical", ico: "✕" },
   sem_dado:          { nome: "Sem dado",                    curto: "Sem dado",  cor: "--nodata",   ico: "·" },
 };
@@ -214,11 +214,11 @@ function kpis() {
   }
   const tiles = [
     ["Seguro", fmtP(pct(c.verde, t)), `${fmtN(c.verde)} células`, "--good"],
-    ["Armadilha: plano mas solto", fmtP(pct(armad, t)), `${fmtN(armad)} células`, "--serious"],
+    ["Atenção: plano, possível solo solto", fmtP(pct(armad, t)), `${fmtN(armad)} células`, "--serious"],
     ["Declive + evitar", fmtP(pct(c.amarelo_declive + c.vermelho, t)), `${fmtN(c.amarelo_declive + c.vermelho)} células`, "--critical"],
-    ["Armadilhas confirmadas pela geologia", fmtP(pct(confirm, armad)), `${fmtN(confirm)} de ${fmtN(armad)}`, null],
+    ["Possível solo solto com material escuro no mapa geológico", fmtP(pct(confirm, armad)), `${fmtN(confirm)} de ${fmtN(armad)} (mapa pode estar deslocado 100–200 m)`, null],
     ["Degraus escondidos (HiRISE 1 m)", fmtN(degraus), "planas na média, íngremes num trecho", null],
-    ["Rota do rover em seguro ou armadilha", fmtP(pct(rota.c.verde + rota.c.amarelo_armadilha, rota.t)), `${fmtN(rota.t)} células na rota`, null],
+    ["Rota do rover em terreno íngreme", fmtP(pct(rota.c.amarelo_declive + rota.c.vermelho, rota.t)), `de ${fmtN(rota.t)} células na rota: a NASA evitou declives`, null],
   ];
   document.getElementById("kpis").innerHTML = tiles.map(([l, v, s, cor]) =>
     `<div class="card kpi"><div class="l">${cor ? `<span class="ico" style="background:var(${cor})"></span>` : ""}${l}</div>

@@ -18,7 +18,7 @@ import config
 
 CLASSES = ["verde", "amarelo_declive", "amarelo_armadilha", "vermelho", "sem_dado"]
 CORES = ["#2e9e5b", "#e8c547", "#e8873a", "#c8352e", "#9a9a9a"]
-NOMES = ["Seguro", "Atenção: declive", "Armadilha: plano mas solto", "Evitar", "Sem dado"]
+NOMES = ["Seguro", "Atenção: declive", "Atenção: plano, possível solo solto", "Evitar", "Sem dado"]
 
 
 def para_matriz(tabela, coluna):

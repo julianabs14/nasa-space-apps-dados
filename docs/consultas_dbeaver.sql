@@ -36,8 +36,9 @@ FROM decisao d JOIN mapa_risco m USING (cell_id)
 GROUP BY d.classe
 ORDER BY firmeza_media DESC;
 
--- 6. Armadilhas confirmadas por DUAS fontes independentes
+-- 6. Possível solo solto apontado por DUAS fontes
 --    (térmico diz "solto" E o mapa geológico diz "material escuro")
+--    Não são totalmente independentes: os geólogos consultaram o THEMIS noturno.
 SELECT cell_id, lat, lon,
       ROUND(declive_medio_graus, 1) AS declive,
       ROUND(indice_firmeza, 2)      AS firmeza,

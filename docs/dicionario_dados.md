@@ -65,11 +65,16 @@ Observação: o THEMIS tem 100 m/pixel, então ~25 células vizinhas compartilha
 - `indice_firmeza` é um índice proposto pelo time, não um produto da NASA.
 - Material escuro (mapa geológico) e THEMIS podem não ser totalmente independentes: os autores do mapa tinham o THEMIS entre as bases usadas no mapeamento.
 - Dado atmosférico: sem fonte nesta fase.
+- THEMIS tem 100 m por pixel: a AOI inteira tem 400 pixels térmicos e só 384 combinações dia/noite. A firmeza muda em blocos de 5 × 5 células.
+- `indice_firmeza` é normalizado pelos percentis 5–95 da própria AOI, então é relativo: uma parte da área sempre sai "solta". `ir_noite` e a amplitude têm correlação de −0,97 (quase a mesma informação).
+- O mapa geológico SIM 3464 foi desenhado sobre mosaico semicontrolado e pode ter deslocamento de 100–200 m (metadados USGS). Perto de fronteiras, unidade e material escuro podem estar na célula errada.
+- A rota do rover passou por 101 células `amarelo_armadilha` (37% da rota): a classe é um alerta para checar o chão, não uma proibição.
+- `dentro_elipse_pouso` é verdadeiro e `terreno_ridged` é falso em todas as 10.000 células: não servem para decidir nesta AOI.
 
 ## Tabela `decisao` (`elt/sql/decisao.sql`)
 | Coluna | Descrição |
 |---|---|
-| `classe` | `verde` (plano e firme), `amarelo_declive` (íngreme e firme), `amarelo_armadilha` (plano mas solto), `vermelho` (íngreme e solto), `sem_dado` |
+| `classe` | `verde` (plano e firme), `amarelo_declive` (íngreme e firme), `amarelo_armadilha` (plano, possível solo solto: checar antes de pisar), `vermelho` (íngreme e solto), `sem_dado` |
 | `perto_cratera` | célula a menos de `DIST_CRATERA_ATENCAO_M` de uma cratera pequena mapeada |
 | `motivo` | texto com os fatores que levaram à classe (base do contexto da LLM na próxima fase) |
 

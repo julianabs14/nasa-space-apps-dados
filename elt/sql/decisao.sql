@@ -2,7 +2,7 @@
 -- Os limites vêm do config.py (substituídos no lugar dos marcadores {…} por elt/carregar.py).
 --
 --                 | solo firme        | solo solto
---   plano         | verde             | amarelo_armadilha  (parece seguro, não é)
+--   plano         | verde             | amarelo_armadilha  (parece seguro; checar antes de pisar)
 --   íngreme       | amarelo_declive   | vermelho
 
 CREATE OR REPLACE TABLE decisao AS

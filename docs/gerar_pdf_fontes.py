@@ -155,7 +155,7 @@ itens = [
       ["Link", L("https://pubs.usgs.gov/publication/sim3464")],
       ["Camadas usadas", "GeoUnits_v1 (unidades), SurfaceFeatures (material escuro de cobertura), LocationFeatures (crateras pequenas), LinearFeatures (bordas de cratera), LandingEllipse (elipse de pouso)"],
       ["O que extraímos", "Unidade geológica de cada célula (<i>Jezero floor</i> / <i>Lower etched</i>), se cai em material escuro, distância até cratera pequena, se está na elipse de pouso."],
-      ["Por que usamos", "Fonte independente, feita por geólogos, que <b>confirma 54% das armadilhas</b> apontadas pelo térmico."]]),
+      ["Por que usamos", "Segunda opinião, feita por geólogos: <b>54% das células de possível solo solto</b> também caem em material escuro de cobertura (contra 6% das células seguras). Não é totalmente independente do térmico (os autores consultaram o THEMIS noturno) e o mapa pode estar deslocado 100–200 m."]]),
     ("5. Óptico — MRO CTX, Jezero Mosaic, Controlled",
      [["Base", "Mars Trek → <i>MRO CTX, Jezero Mosaic, Controlled</i>"],
       ["Arquivo", "JEZ_ctx_B_soc_008_orthoMosaic_6m_Eqc_latTs0_lon0.tif (36 MB, 6 m, tons de cinza)"],
@@ -167,7 +167,7 @@ itens = [
        L("https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_traverse.json", "M20_traverse.json") + " (trilha)"],
       ["Arquivos", "m20_waypoints_aoi.csv (108 paradas na área) e m20_traverse_aoi.csv (4.603 pontos), já no repositório"],
       ["O que extraímos", "Por quais células o rover passou, onde parou, o sol e a chave <b>site_drive</b>."],
-      ["Por que usamos", "<b>Validação com a realidade</b>: 98% da rota real passou por células seguras ou de armadilha, e só 5 de 271 por declive/evitar. E o site_drive liga as 1,05 milhão de fotos ao mapa."]]),
+      ["Por que usamos", "<b>Comparação com a realidade</b>: só 5 das 271 células da rota (1,8%) são íngremes, então a NASA evitou declives como o mapa faria. Mas 101 células da rota (37%) estão marcadas como possível solo solto e o rover passou por elas: esse alerta é para checar, não proibição. E o site_drive liga as 1,05 milhão de fotos ao mapa."]]),
     ("7. Imagens do rover — Mars Perseverance Raw Images (próxima fase)",
      [["Link", L("https://mars.nasa.gov/mars2020/multimedia/raw-images/") + " · API: " +
        L("https://mars.nasa.gov/rss/api/?feed=raw_images&category=mars2020&feedtype=json&ver=1.2&num=100&page=0&order=sol+desc", "rss/api (JSON)")],
