@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F.A.R.O.L. — Dashboard de risco · Jezero</title>
+<style>
+.viz-root {
+  color-scheme: light;
+  --surface-0: #f4f3f0; --surface-1: #fcfcfb; --border: #e3e2dd;
+  --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #7a7974;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b; --nodata: #a8a7a1;
+  --accent: #2a78d6; --track: #e9e8e3;
+  --seq: #cde2fb,#9ec5f4,#6da7ec,#3987e5,#256abf,#184f95,#0d366b;
+}
+@media (prefers-color-scheme: dark) {
+  .viz-root {
+    color-scheme: dark;
+    --surface-0: #121211; --surface-1: #1a1a19; --border: #2e2e2c;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+    --nodata: #5a5955; --accent: #3987e5; --track: #2a2a28;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.viz-root { background: var(--surface-0); color: var(--text-primary); min-height: 100vh; padding: 24px; }
+.wrap { max-width: 1240px; margin: 0 auto; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; }
+.sub { color: var(--text-secondary); margin: 4px 0 20px; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.card h2 { font-size: 14px; font-weight: 600; margin: 0 0 2px; }
+.card .hint { color: var(--text-muted); font-size: 12px; margin: 0 0 12px; }
+.controls { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; margin-bottom: 16px; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--text-secondary); padding: 6px 12px; font: inherit; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.ctl { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--text-secondary); }
+.ctl input[type=range] { width: 170px; accent-color: var(--accent); }
+.ctl b { color: var(--text-primary); }
+label.chk { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+.kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px; }
+.kpi .v { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.kpi .l { font-size: 12px; color: var(--text-secondary); }
+.kpi .s { font-size: 11px; color: var(--text-muted); }
+.kpi .ico { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: 1px; }
+.main { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; }
+.mapbox { position: relative; }
+canvas#mapa { width: 100%; aspect-ratio: 1; display: block; border-radius: 8px; cursor: crosshair; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: 12px; color: var(--text-secondary); align-items: center; }
+.legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; }
+.legend .grad { width: 160px; height: 10px; border-radius: 3px; display: inline-block; vertical-align: -1px; margin: 0 6px; }
+.tip { position: absolute; pointer-events: none; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;
+       padding: 10px 12px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.18); min-width: 220px; display: none; z-index: 5; }
+.tip .t { font-weight: 600; margin-bottom: 4px; }
+.tip table { border-collapse: collapse; width: 100%; }
+.tip td { padding: 1px 0; color: var(--text-secondary); }
+.tip td:last-child { text-align: right; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.tip .m { margin-top: 6px; color: var(--text-primary); max-width: 260px; }
+.side { display: grid; gap: 16px; align-content: start; }
+.bar-row { display: grid; grid-template-columns: 150px 1fr 64px; gap: 8px; align-items: center; margin: 6px 0; font-size: 12px; }
+.bar-row .lab { color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-row .val { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+.track { height: 14px; background: var(--track); border-radius: 4px; position: relative; overflow: hidden; }
+.fill { height: 100%; border-radius: 0 4px 4px 0; }
+.stack { display: flex; height: 16px; gap: 2px; border-radius: 4px; overflow: hidden; }
+.stack div { height: 100%; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+details { margin-top: 16px; }
+summary { cursor: pointer; color: var(--text-secondary); }
+table.dados { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+table.dados th, table.dados td { border-bottom: 1px solid var(--border); padding: 6px 8px; text-align: right; }
+table.dados th:first-child, table.dados td:first-child { text-align: left; }
+table.dados th { color: var(--text-secondary); font-weight: 500; }
+.foot { color: var(--text-muted); font-size: 12px; margin-top: 16px; }
+@media (max-width: 960px) { .main { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(3, 1fr); } }
+</style>
+</head>
+<body>
+<div class="viz-root">
+<div class="wrap">
+  <h1>F.A.R.O.L. — Mapa de risco da caminhada · Cratera Jezero</h1>
+  <p class="sub" id="sub"></p>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Camada do mapa" id="camadas">
+      <button data-c="decisao" aria-pressed="true">Decisão</button>
+      <button data-c="declive" aria-pressed="false">Declive</button>
+      <button data-c="firmeza" aria-pressed="false">Firmeza do solo</button>
+      <button data-c="escuro" aria-pressed="false">Material escuro</button>
+      <button data-c="imagem" aria-pressed="false">Só imagem</button>
+    </div>
+    <div class="ctl">Íngreme a partir de <b><span id="vD"></span>°</b>
+      <input type="range" id="limD" min="5" max="25" step="1"></div>
+    <div class="ctl">Solo solto abaixo de firmeza <b><span id="vF"></span></b>
+      <input type="range" id="limF" min="0.05" max="0.7" step="0.05"></div>
+    <label class="chk"><input type="checkbox" id="chkRota" checked> Rota real do Perseverance</label>
+    <label class="chk"><input type="checkbox" id="chkImg" checked> Imagem CTX ao fundo</label>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="main">
+    <div class="card">
+      <h2>Mapa da área (2 × 2 km, células de 20 m)</h2>
+      <p class="hint">Passe o mouse sobre o mapa para ver os dados de cada célula. Norte para cima.</p>
+      <div class="mapbox" id="mapbox">
+        <canvas id="mapa" aria-label="Mapa de risco por célula"></canvas>
+        <div class="tip" id="tip"></div>
+      </div>
+      <div class="legend" id="legenda"></div>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <h2>Área por classe</h2>
+        <p class="hint">Cruzamento de declive (topografia) × firmeza (térmico)</p>
+        <div id="chClasses"></div>
+      </div>
+      <div class="card">
+        <h2>Risco por unidade geológica</h2>
+        <p class="hint">Mapa geológico USGS SIM 3464</p>
+        <div id="chUnidades"></div>
+      </div>
+      <div class="card">
+        <h2>Validação: por onde o Perseverance andou</h2>
+        <p class="hint">Classe das células atravessadas pela rota real do rover</p>
+        <div id="chRota"></div>
+      </div>
+      <div class="two">
+        <div class="card">
+          <h2>Firmeza média</h2>
+          <p class="hint">O térmico separa as classes</p>
+          <div id="chFirmeza"></div>
+        </div>
+        <div class="card">
+          <h2>Brilho na imagem</h2>
+          <p class="hint">A câmera quase não separa</p>
+          <div id="chBrilho"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <details class="card">
+    <summary>Ver os números em tabela</summary>
+    <table class="dados" id="tabela"></table>
+  </details>
+
+  <p class="foot">Fontes: Mars Trek (HiRISE e CTX Jezero, controlados) · USGS SIM 3464 (THEMIS IR noite/dia, mapa geológico Nili.gdb) ·
+    NASA MMGIS (rota do Perseverance). Firmeza é um índice relativo à área (0 = mais solto, 1 = mais firme), não temperatura.
+    Limites de decisão são hipóteses do time e podem ser ajustados acima.</p>
+</div>
+</div>
+
+<script>
+const D = /*__DADOS__*/null;
+const N = D.n, TOTAL = N * N;
+const CL = {
+  verde:             { nome: "Seguro",                      curto: "Seguro",    cor: "--good",     ico: "✓" },
+  amarelo_declive:   { nome: "Atenção: declive",            curto: "Declive",   cor: "--warning",  ico: "▲" },
+  amarelo_armadilha: { nome: "Armadilha: plano mas solto",  curto: "Armadilha", cor: "--serious",  ico: "◆" },
+  vermelho:          { nome: "Evitar",                      curto: "Evitar",    cor: "--critical", ico: "✕" },
+  sem_dado:          { nome: "Sem dado",                    curto: "Sem dado",  cor: "--nodata",   ico: "·" },
+};
+const ORDEM = ["verde", "amarelo_armadilha", "amarelo_declive", "vermelho", "sem_dado"];
+const css = n => getComputedStyle(document.querySelector(".viz-root")).getPropertyValue(n).trim();
+const seq = () => css("--seq").split(",").map(s => s.trim());
+const pct = (a, b) => b ? (100 * a / b) : 0;
+const fmtP = v => v.toFixed(1).replace(".", ",") + "%";
+const fmtN = v => v.toLocaleString("pt-BR");
+
+const estado = { camada: "decisao", limD: D.limites.declive, limF: D.limites.firmeza, rota: true, img: true, hover: -1 };
+let classes = new Array(TOTAL);
+
+function classificar() {
+  for (let i = 0; i < TOTAL; i++) {
+    const dm = D.dm[i], fi = D.fi[i];
+    if (dm === null || fi === null) { classes[i] = "sem_dado"; continue; }
+    const ingreme = dm >= estado.limD, solto = fi < estado.limF;
+    classes[i] = ingreme && solto ? "vermelho" : solto ? "amarelo_armadilha" : ingreme ? "amarelo_declive" : "verde";
+  }
+}
+function degrau(i) { return D.dx[i] !== null && D.dx[i] >= D.limites.degrau && D.dm[i] < estado.limD; }
+function motivo(i) {
+  const m = [];
+  if (D.dm[i] >= estado.limD) m.push(`declive ${D.dm[i].toFixed(1)}°`);
+  if (D.fi[i] < estado.limF) m.push(`solo possivelmente solto (firmeza ${D.fi[i].toFixed(2)})`);
+  if (D.me[i]) m.push("material escuro de cobertura (mapa geológico)");
+  if (degrau(i)) m.push(`degrau escondido: trecho de ${Math.round(D.dx[i])}° dentro da célula`);
+  if (D.dc[i] !== null && D.dc[i] < 30) m.push(`cratera pequena a ${Math.round(D.dc[i])} m`);
+  return m.length ? m.join("; ") : "terreno firme e plano";
+}
+function contar(filtro) {
+  const c = Object.fromEntries(ORDEM.map(k => [k, 0]));
+  let t = 0;
+  for (let i = 0; i < TOTAL; i++) if (!filtro || filtro(i)) { c[classes[i]]++; t++; }
+  return { c, t };
+}
+function media(arr, filtro) {
+  let s = 0, n = 0;
+  for (let i = 0; i < TOTAL; i++) if (arr[i] !== null && filtro(i)) { s += arr[i]; n++; }
+  return n ? s / n : null;
+}
+
+/* ---------- KPIs ---------- */
+function kpis() {
+  const { c, t } = contar();
+  const rota = contar(i => D.rv[i]);
+  const armad = c.amarelo_armadilha;
+  let confirm = 0, degraus = 0;
+  for (let i = 0; i < TOTAL; i++) {
+    if (classes[i] === "amarelo_armadilha" && D.me[i]) confirm++;
+    if (degrau(i)) degraus++;
+  }
+  const tiles = [
+    ["Seguro", fmtP(pct(c.verde, t)), `${fmtN(c.verde)} células`, "--good"],
+    ["Armadilha: plano mas solto", fmtP(pct(armad, t)), `${fmtN(armad)} células`, "--serious"],
+    ["Declive + evitar", fmtP(pct(c.amarelo_declive + c.vermelho, t)), `${fmtN(c.amarelo_declive + c.vermelho)} células`, "--critical"],
+    ["Armadilhas confirmadas pela geologia", fmtP(pct(confirm, armad)), `${fmtN(confirm)} de ${fmtN(armad)}`, null],
+    ["Degraus escondidos (HiRISE 1 m)", fmtN(degraus), "planas na média, íngremes num trecho", null],
+    ["Rota do rover em seguro ou armadilha", fmtP(pct(rota.c.verde + rota.c.amarelo_armadilha, rota.t)), `${fmtN(rota.t)} células na rota`, null],
+  ];
+  document.getElementById("kpis").innerHTML = tiles.map(([l, v, s, cor]) =>
+    `<div class="card kpi"><div class="l">${cor ? `<span class="ico" style="background:var(${cor})"></span>` : ""}${l}</div>
+     <div class="v">${v}</div><div class="s">${s}</div></div>`).join("");
+}
+
+/* ---------- Gráficos ---------- */
+function barras(id, itens, max, fmt) {
+  document.getElementById(id).innerHTML = itens.map(it => `
+    <div class="bar-row" title="${it.label}: ${fmt(it.valor)}">
+      <span class="lab">${it.ico ? it.ico + " " : ""}${it.label}</span>
+      <div class="track"><div class="fill" style="width:${max ? Math.max(0.5, 100 * it.valor / max) : 0}%;background:var(${it.cor})"></div></div>
+      <span class="val">${fmt(it.valor)}</span>
+    </div>`).join("");
+}
+function graficos() {
+  const { c, t } = contar();
+  const ks = ORDEM.filter(k => c[k] > 0);
+  barras("chClasses", ks.map(k => ({ label: CL[k].nome, ico: CL[k].ico, cor: CL[k].cor, valor: pct(c[k], t) })), 100, fmtP);
+
+  document.getElementById("chUnidades").innerHTML = D.unidades.map((u, ui) => {
+    const r = contar(i => D.un[i] === ui);
+    const seg = ORDEM.filter(k => r.c[k] > 0).map(k =>
+      `<div style="width:${pct(r.c[k], r.t)}%;background:var(${CL[k].cor})" title="${CL[k].nome}: ${fmtP(pct(r.c[k], r.t))}"></div>`).join("");
+    return `<div style="margin:8px 0"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary)">
+      <span>${u}</span><span>${fmtN(r.t)} células · ${fmtP(pct(r.c.verde, r.t))} seguro</span></div>
+      <div class="stack" style="margin-top:4px">${seg}</div></div>`;
+  }).join("");
+
+  const rota = contar(i => D.rv[i]);
+  barras("chRota", ORDEM.filter(k => rota.c[k] > 0).map(k => ({ label: CL[k].nome, ico: CL[k].ico, cor: CL[k].cor, valor: pct(rota.c[k], rota.t) })), 100, fmtP);
+
+  const mF = ks.map(k => ({ label: CL[k].curto, ico: CL[k].ico, cor: CL[k].cor, valor: media(D.fi, i => classes[i] === k) }));
+  barras("chFirmeza", mF, 1, v => v === null ? "–" : v.toFixed(2).replace(".", ","));
+  const mB = ks.map(k => ({ label: CL[k].curto, ico: CL[k].ico, cor: CL[k].cor, valor: media(D.br, i => classes[i] === k) }));
+  barras("chBrilho", mB, 255, v => v === null ? "–" : Math.round(v));
+  document.querySelectorAll("#chFirmeza .bar-row, #chBrilho .bar-row").forEach(r => r.style.gridTemplateColumns = "1fr 1fr 40px");
+
+  document.getElementById("tabela").innerHTML =
+    `<tr><th>Classe</th><th>Células</th><th>% da área</th><th>Firmeza média</th><th>Declive médio (°)</th><th>Brilho médio</th><th>Células na rota do rover</th></tr>` +
+    ks.map(k => `<tr><td>${CL[k].ico} ${CL[k].nome}</td><td>${fmtN(c[k])}</td><td>${fmtP(pct(c[k], t))}</td>
+      <td>${(media(D.fi, i => classes[i] === k) ?? 0).toFixed(2)}</td><td>${(media(D.dm, i => classes[i] === k) ?? 0).toFixed(1)}</td>
+      <td>${Math.round(media(D.br, i => classes[i] === k) ?? 0)}</td><td>${fmtN(rota.c[k])}</td></tr>`).join("");
+}
+
+/* ---------- Mapa ---------- */
+const canvas = document.getElementById("mapa"), ctx = canvas.getContext("2d");
+const img = new Image(); img.src = D.imagem; img.onload = desenhar;
+function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function corSeq(v, min, max) {
+  const r = seq(); if (v === null) return null;
+  const t = Math.min(1, Math.max(0, (v - min) / (max - min)));
+  return r[Math.round(t * (r.length - 1))];
+}
+function corCelula(i) {
+  const cam = estado.camada;
+  if (cam === "decisao") { const k = classes[i]; return { cor: css(CL[k].cor), a: k === "verde" ? 0.07 : 0.62 }; }
+  if (cam === "declive") return { cor: corSeq(D.dm[i], 0, 20), a: 0.78 };
+  if (cam === "firmeza") return { cor: corSeq(D.fi[i], 0, 1), a: 0.78 };
+  if (cam === "escuro") return D.me[i] ? { cor: seq()[5], a: 0.55 } : null;
+  return null;
+}
+function desenhar() {
+  const dpr = window.devicePixelRatio || 1, L = canvas.clientWidth;
+  canvas.width = L * dpr; canvas.height = L * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = css("--surface-0"); ctx.fillRect(0, 0, L, L);
+  if (estado.img || estado.camada === "imagem") { ctx.imageSmoothingEnabled = true; ctx.drawImage(img, 0, 0, L, L); }
+  const c = L / N;
+  for (let i = 0; i < TOTAL; i++) {
+    const k = corCelula(i); if (!k || !k.cor) continue;
+    const [r, g, b] = hexRgb(k.cor);
+    ctx.fillStyle = `rgba(${r},${g},${b},${k.a})`;
+    ctx.fillRect((i % N) * c, Math.floor(i / N) * c, c + 0.5, c + 0.5);
+  }
+  if (estado.rota) {
+    const esc = L / D.lado_km;
+    for (const [larg, cor] of [[4.5, css("--surface-1")], [2, css("--text-primary")]]) {
+      ctx.lineWidth = larg; ctx.strokeStyle = cor; ctx.lineJoin = ctx.lineCap = "round";
+      for (const tr of D.rota) {
+        ctx.beginPath();
+        tr.forEach(([x, y], j) => j ? ctx.lineTo(x * esc, L - y * esc) : ctx.moveTo(x * esc, L - y * esc));
+        ctx.stroke();
+      }
+    }
+  }
+  if (estado.hover >= 0) {
+    ctx.lineWidth = 2; ctx.strokeStyle = css("--text-primary");
+    ctx.strokeRect((estado.hover % N) * c, Math.floor(estado.hover / N) * c, c, c);
+  }
+  legenda();
+}
+function legenda() {
+  const el = document.getElementById("legenda"), cam = estado.camada;
+  const r = seq(), grad = `linear-gradient(90deg, ${r.join(",")})`;
+  let h = "";
+  if (cam === "decisao") h = ORDEM.filter(k => k !== "sem_dado").map(k => `<span><span class="sw" style="background:var(${CL[k].cor})"></span>${CL[k].ico} ${CL[k].nome}</span>`).join("");
+  if (cam === "declive") h = `<span>Declive médio: 0°<span class="grad" style="background:${grad}"></span>20°+</span>`;
+  if (cam === "firmeza") h = `<span>Firmeza: 0 (solto)<span class="grad" style="background:${grad}"></span>1 (firme)</span>`;
+  if (cam === "escuro") h = `<span><span class="sw" style="background:${r[5]}"></span>Material escuro de cobertura (SIM 3464)</span>`;
+  if (cam === "imagem") h = `<span>Imagem CTX 6 m (Mars Trek), sem camadas de dados</span>`;
+  if (estado.rota) h += `<span><span class="sw" style="background:var(--text-primary);height:3px;vertical-align:3px"></span>Rota real do Perseverance</span>`;
+  el.innerHTML = h;
+}
+
+const tip = document.getElementById("tip");
+canvas.addEventListener("mousemove", ev => {
+  const rc = canvas.getBoundingClientRect();
+  const col = Math.floor((ev.clientX - rc.left) / rc.width * N), lin = Math.floor((ev.clientY - rc.top) / rc.height * N);
+  if (col < 0 || lin < 0 || col >= N || lin >= N) return;
+  const i = lin * N + col;
+  if (i !== estado.hover) { estado.hover = i; desenhar(); }
+  const k = classes[i], f = (v, d, u = "") => v === null ? "–" : v.toFixed(d).replace(".", ",") + u;
+  tip.innerHTML = `<div class="t">${CL[k].ico} ${CL[k].nome}</div>
+    <table>
+      <tr><td>Célula</td><td>r${String(lin).padStart(3, "0")}_c${String(col).padStart(3, "0")}</td></tr>
+      <tr><td>Lat / Lon</td><td>${f(D.lat[i], 4)} / ${f(D.lon[i], 4)}</td></tr>
+      <tr><td>Altitude</td><td>${f(D.elev[i], 1, " m")}</td></tr>
+      <tr><td>Declive médio / máximo</td><td>${f(D.dm[i], 1, "°")} / ${f(D.dx[i], 1, "°")}</td></tr>
+      <tr><td>Firmeza do solo</td><td>${f(D.fi[i], 2)}</td></tr>
+      <tr><td>Amplitude dia−noite</td><td>${f(D.amp[i], 0)}</td></tr>
+      <tr><td>Unidade geológica</td><td>${D.unidades[D.un[i]] ?? "–"}</td></tr>
+      <tr><td>Material escuro</td><td>${D.me[i] ? "sim" : "não"}</td></tr>
+      <tr><td>Brilho na imagem</td><td>${f(D.br[i], 0)}</td></tr>
+      <tr><td>Rover passou</td><td>${D.rv[i] ? "sim (sol " + f(D.sol[i], 0) + ")" : "não"}</td></tr>
+    </table><div class="m">${motivo(i)}</div>`;
+  tip.style.display = "block";
+  const bx = document.getElementById("mapbox").getBoundingClientRect();
+  let x = ev.clientX - bx.left + 16, y = ev.clientY - bx.top + 16;
+  if (x + tip.offsetWidth > bx.width) x = ev.clientX - bx.left - tip.offsetWidth - 16;
+  if (y + tip.offsetHeight > bx.height) y = Math.max(0, ev.clientY - bx.top - tip.offsetHeight - 16);
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+});
+canvas.addEventListener("mouseleave", () => { tip.style.display = "none"; estado.hover = -1; desenhar(); });
+
+/* ---------- Controles ---------- */
+const limD = document.getElementById("limD"), limF = document.getElementById("limF");
+limD.value = estado.limD; limF.value = estado.limF;
+function atualizar() {
+  document.getElementById("vD").textContent = estado.limD;
+  document.getElementById("vF").textContent = Number(estado.limF).toFixed(2).replace(".", ",");
+  classificar(); kpis(); graficos(); desenhar();
+}
+limD.oninput = () => { estado.limD = +limD.value; atualizar(); };
+limF.oninput = () => { estado.limF = +limF.value; atualizar(); };
+document.getElementById("chkRota").onchange = e => { estado.rota = e.target.checked; desenhar(); };
+document.getElementById("chkImg").onchange = e => { estado.img = e.target.checked; desenhar(); };
+document.querySelectorAll("#camadas button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#camadas button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  estado.camada = b.dataset.c; desenhar();
+});
+window.addEventListener("resize", desenhar);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", atualizar);
+document.getElementById("sub").textContent =
+  `${fmtN(TOTAL)} células de ${D.tam_celula_m} m · topografia: ${D.fonte_dem} · arraste os limites para ver o risco mudar em tempo real`;
+atualizar();
+</script>
+</body>
+</html>

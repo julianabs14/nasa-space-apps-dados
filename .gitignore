@@ -1,0 +1,13 @@
+# ambiente e cache
+.venv/
+__pycache__/
+*.pyc
+
+# dados brutos grandes (ver README: "Dados brutos")
+data/raw/*
+!data/raw/m20_waypoints_aoi.csv
+!data/raw/m20_traverse_aoi.csv
+
+# banco gerado pelo pipeline
+*.duckdb
+*.duckdb.wal
